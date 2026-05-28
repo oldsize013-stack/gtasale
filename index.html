@@ -6,185 +6,92 @@
     <title>Рыбалка GTA 5 RP</title>
     <script src="https://telegram.org"></script>
     <style>
-        body { background-color: #0f1115; color: #ffffff; font-family: Arial, sans-serif; margin: 0; padding: 15px; box-sizing: border-box; }
-        .header { text-align: center; padding: 10px 0; font-weight: bold; color: #00ff88; font-size: 18px; border-bottom: 1px solid #1f232b; }
-        
-        .tabs { display: flex; justify-content: space-around; margin: 15px 0; background: #171a21; border-radius: 8px; padding: 4px; }
-        .tab { flex: 1; text-align: center; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; color: #7a8b9e; font-size: 14px; }
-        .tab.active { background: #00ff88; color: #000; }
-        
-        .section { display: none; }
-        .section.active { display: block; }
-        
-        /* Кликабельные плитки статистики в стиле Artis */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-box { background: #171a21; border: 1px solid #232834; border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .stat-box:hover { border-color: #00ff88; background: #1c2029; }
-        .stat-box.selected { border-color: #00ff88; background: #1f2430; box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
-        .stat-label { color: #7a8b9e; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
-        .stat-value { color: #00ff88; font-size: 20px; font-weight: bold; }
-        
-        /* Фильтр-статус над списком рыбы */
-        .filter-status { background: #1c2029; border-radius: 6px; padding: 8px 12px; margin-bottom: 15px; font-size: 13px; color: #7a8b9e; display: flex; justify-content: space-between; align-items: center; }
-        .reset-filter { color: #00ff88; cursor: pointer; font-weight: bold; font-size: 12px; }
-        
-        /* Карточки улова */
-        .card { background: #171a21; border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; border: 1px solid #232834; animation: fadeIn 0.3s ease; }
-        .card-img { width: 70px; height: 50px; border-radius: 6px; object-fit: cover; margin-right: 12px; background: #232834; }
-        .card-info { flex-grow: 1; }
-        .card-title { font-weight: bold; font-size: 15px; margin-bottom: 3px; }
-        .card-sub { color: #7a8b9e; font-size: 12px; }
-        .card-price { color: #00ff88; font-weight: bold; font-size: 16px; margin-left: 10px; }
-        
-        /* Кликабельный список дней */
-        .day-card { background: #171a21; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #00ff88; cursor: pointer; transition: 0.2s; }
-        .day-card:hover { background: #1c2029; transform: translateX(3px); }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        body { background:#0f1115; color:#fff; font-family:Arial; margin:0; padding:15px; }
+        .header { text-align:center; padding:10px; color:#00ff88; font-weight:bold; border-bottom:1px solid #1f232b; }
+        .tabs { display:flex; margin:15px 0; background:#171a21; border-radius:8px; padding:4px; }
+        .tab { flex:1; text-align:center; padding:10px; cursor:pointer; font-weight:bold; color:#7a8b9e; font-size:14px; }
+        .tab.active { background:#00ff88; color:#000; border-radius:6px; }
+        .section { display:none; } .section.active { display:block; }
+        .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+        .stat-box { background:#171a21; border:1px solid #232834; border-radius:10px; padding:12px; text-align:center; cursor:pointer; }
+        .stat-box.selected { border-color:#00ff88; background:#1f2430; }
+        .stat-label { color:#7a8b9e; font-size:11px; font-weight:bold; margin-bottom:5px; }
+        .stat-value { color:#00ff88; font-size:18px; font-weight:bold; }
+        .filter-status { background:#1c2029; border-radius:6px; padding:8px; margin-bottom:15px; font-size:13px; color:#7a8b9e; display:flex; justify-content:space-between; }
+        .card { background:#171a21; border-radius:10px; padding:12px; margin-bottom:10px; display:flex; align-items:center; border:1px solid #232834; }
+        .card-img { width:70px; height:50px; border-radius:6px; object-fit:cover; margin-right:12px; }
+        .card-info { flex-grow:1; } .card-title { font-weight:bold; font-size:15px; } .card-sub { color:#7a8b9e; font-size:12px; }
+        .card-price { color:#00ff88; font-weight:bold; font-size:16px; }
+        .day-card { background:#171a21; border-radius:8px; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid #00ff88; cursor:pointer; }
     </style>
 </head>
 <body>
     <div class="header"> Analitycs 🎣 ДНЕВНИК ФАРМА — СТИВ</div>
-    
     <div class="tabs">
-        <div class="tab active" id="tab_history_btn" onclick="switchTab('history', this)">Улов</div>
-        <div class="tab" id="tab_stats_btn" onclick="switchTab('stats', this)">Заработок по дням</div>
+        <div class="tab active" id="t_hist" onclick="switchTab('history', this)">Улов</div>
+        <div class="tab" id="t_stat" onclick="switchTab('stats', this)">Заработок по дням</div>
     </div>
-    
-    <!-- Вкладка 1: Лента улова с фильтрацией -->
     <div id="history" class="section active">
-        <div class="filter-status" id="filter_bar" style="display: none;">
-            <span id="filter_text">Показан улов: Все время</span>
-            <span class="reset-filter" onclick="resetGlobalFilter()">Сбросить X</span>
+        <div class="filter-status" id="filter_bar" style="display:none;">
+            <span id="filter_text">Все время</span>
+            <span style="color:#00ff88;cursor:pointer;" onclick="resetFilter()">Сбросить X</span>
         </div>
         <div id="fish_list"></div>
     </div>
-    
-    <!-- Вкладка 2: Кликабельные плитки статистики -->
     <div id="stats" class="section">
         <div class="stats-grid">
-            <div class="stat-box" id="box_today" onclick="filterByPeriod('today', this)">
-                <div class="stat-label">Сегодня</div>
-                <div class="stat-value" id="stat_today">0$</div>
-            </div>
-            <div class="stat-box" id="box_week" onclick="filterByPeriod('week', this)">
-                <div class="stat-label">Неделя</div>
-                <div class="stat-value" id="stat_week">0$</div>
-            </div>
-            <div class="stat-box" id="box_month" onclick="filterByPeriod('month', this)">
-                <div class="stat-label">Месяц</div>
-                <div class="stat-value" id="stat_month">0$</div>
-            </div>
-            <div class="stat-box" id="box_all" onclick="filterByPeriod('all', this)">
-                <div class="stat-label">Все время</div>
-                <div class="stat-value" id="stat_all">0$</div>
-            </div>
+            <div class="stat-box" id="b_today" onclick="setPeriod('today', this)"><div class="stat-label">Сегодня</div><div class="stat-value" id="s_today">0$</div></div>
+            <div class="stat-box" id="b_week" onclick="setPeriod('week', this)"><div class="stat-label">Неделя</div><div class="stat-value" id="s_week">0$</div></div>
+            <div class="stat-box" id="b_month" onclick="setPeriod('month', this)"><div class="stat-label">Месяц</div><div class="stat-value" id="s_month">0$</div></div>
+            <div class="stat-box" id="b_all" onclick="setPeriod('all', this)"><div class="stat-label">Все время</div><div class="stat-value" id="s_all">0$</div></div>
         </div>
         <div id="days_list"></div>
     </div>
-
     <script>
         const tg = window.Telegram.WebApp; tg.expand();
-        let globalData = { history: [], days: {} };
-        let activeFilter = { type: 'all', value: null };
-
+        let db = { history: [], days: {} }; let filter = { type: 'all', val: null };
         function switchTab(id, el) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active'); el.classList.add('active');
         }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const rawData = urlParams.get('data');
-        
-        if (rawData) {
-            try {
-                globalData = JSON.parse(decodeURIComponent(rawData));
-                renderApp();
-            } catch(e) { console.error("Ошибка парсинга БД:", e); }
-        }
-
-        function renderApp() {
-            calculateTopWidgets();
-            renderDaysList();
-            applyFilterAndRenderFish();
-        }
-
-        // 1. Автоматический расчет плиток статистики
-        function calculateTopWidgets() {
-            let totalAll = 0, totalToday = 0, totalWeek = 0, totalMonth = 0;
-            const now = new Date();
-            const todayStr = now.toLocaleDateString('ru-RU');
-            
-            // Расчет периодов
-            const oneWeekAgo = new Date(); oneWeekAgo.setDate(now.getDate() - 7);
-            const oneMonthAgo = new Date(); oneMonthAgo.setMonth(now.getMonth() - 1);
-
-            Object.keys(globalData.days).forEach(dateStr => {
-                const dayMoney = globalData.days[dateStr].money;
-                totalAll += dayMoney;
-
-                // Парсим дату "ДД.ММ.ГГГГ" для сравнения периодов
-                const parts = dateStr.split('.');
-                const dayDate = new Date(parts[2], parts[1] - 1, parts[0]);
-
-                if (dateStr === todayStr) totalToday += dayMoney;
-                if (dayDate >= oneWeekAgo) totalWeek += dayMoney;
-                if (dayDate >= oneMonthAgo) totalMonth += dayMoney;
+        const raw = new URLSearchParams(window.location.search).get('data');
+        if (raw) { try { db = JSON.parse(decodeURIComponent(raw)); render(); } catch(e){} }
+        function render() {
+            let tAll=0, tToday=0, tWeek=0, tMonth=0; const now = new Date(); const tStr = now.toLocaleDateString('ru-RU');
+            Object.keys(db.days).forEach(d => {
+                const m = db.days[d].money; tAll += m; if(d === tStr) tToday += m;
+                const p = d.split('.'); const dObj = new Date(p[2], p[1]-1, p[0]);
+                if((now - dObj)/(1000*60*60*24) <= 7) tWeek += m; if((now - dObj)/(1000*60*60*24) <= 30) tMonth += m;
             });
-
-            document.getElementById('stat_today').innerText = totalToday + '$';
-            document.getElementById('stat_week').innerText = totalWeek + '$';
-            document.getElementById('stat_month').innerText = totalMonth + '$';
-            document.getElementById('stat_all').innerText = totalAll + '$';
+            document.getElementById('s_today').innerText = tToday+'$'; document.getElementById('s_week').innerText = tWeek+'$';
+            document.getElementById('s_month').innerText = tMonth+'$'; document.getElementById('s_all').innerText = tAll+'$';
+            const dList = document.getElementById('days_list'); dList.innerHTML = "";
+            Object.keys(db.days).sort().reverse().forEach(d => {
+                dList.innerHTML += `<div class="day-card" onclick="setDate('${d}')"><b>📅 ${d}</b><div style="text-align:right;color:#00ff88;font-weight:bold;">+${db.days[d].money}$<br><span style="color:#7a8b9e;font-size:11px;">${db.days[d].weight.toFixed(1)} кг</span></div></div>`;
+            });
+            showFish();
         }
-
-        // 2. Рендер списка дней (каждая дата кликабельна!)
-        function renderDaysList() {
-            const dList = document.getElementById('days_list');
-            dList.innerHTML = "";
-            
-            Object.keys(globalData.days).sort((a,b) => {
-                const pA = a.split('.'), pB = b.split('.');
-                return new Date(pB[2], pB[1]-1, pB[0]) - new Date(pA[2], pA[1]-1, pA[0]);
-            }).forEach(date => {
-                dList.innerHTML += `<div class="day-card" onclick="filterBySpecificDate('${date}')">
-                    <div style="font-weight:bold;">📅 ${date}</div>
-                    <div style="text-align:right;">
-                        <div style="color:#00ff88;font-weight:bold;">+${globalData.days[date].money}$</div>
-                        <div style="color:#7a8b9e;font-size:12px;">Улов: ${globalData.days[date].weight.toFixed(2)} кг</div>
-                    </div>
-                </div>`;
+        function showFish() {
+            const fList = document.getElementById('fish_list'); fList.innerHTML = "";
+            const bar = document.getElementById('filter_bar'); const bTxt = document.getElementById('filter_text');
+            let list = [...db.history]; const now = new Date(); const tStr = now.toLocaleDateString('ru-RU');
+            if (filter.type === 'date') { bar.style.display='flex'; bTxt.innerText='Дата: '+filter.val; list=list.filter(f=>f.time); }
+            else if (filter.type === 'today') { bar.style.display='flex'; bTxt.innerText='За сегодня'; }
+            else if (filter.type === 'week') { bar.style.display='flex'; bTxt.innerText='За неделю'; }
+            else if (filter.type === 'month') { bar.style.display='flex'; bTxt.innerText='За месяц'; }
+            else { bar.style.display='none'; }
+            if(!list.length) { fList.innerHTML='<div style="text-align:center;color:#7a8b9e;margin-top:30px;">Пусто</div>'; return; }
+            list.reverse().forEach(f => {
+                fList.innerHTML += `<div class="card"><img class="card-img" src="${f.img||'https://placehold.co'}"><div class="card-info"><div class="card-title">${f.name}</div><div class="card-sub">Вес: ${f.weight} кг | ${f.time}</div></div><div class="card-price">+${f.price}$</div></div>`;
             });
         }
-
-        // 3. Фильтрация и отрисовка карточек рыб
-        function applyFilterAndRenderFish() {
-            const fList = document.getElementById('fish_list');
-            fList.innerHTML = "";
-            
-            const filterBar = document.getElementById('filter_bar');
-            const filterText = document.getElementById('filter_text');
-            
-            let filteredHistory = [...globalData.history];
-            const now = new Date();
-            
-            if (activeFilter.type === 'specific_date') {
-                filterBar.style.display = 'flex';
-                filterText.innerText = `Фильтр по дате: ${activeFilter.value}`;
-                filteredHistory = filteredHistory.filter(f => f.full_date === activeFilter.value || (globalData.days[activeFilter.value] && f.time)); 
-                // Заглушка проверки полной даты
-                filteredHistory = globalData.history.filter(f => {
-                     // Если в истории есть точная привязка по дням
-                     return true; 
-                });
-            } else if (activeFilter.type === 'today') {
-                filterBar.style.display = 'flex';
-                filterText.innerText = "Показан улов: За сегодня";
-            } else if (activeFilter.type === 'week') {
-                filterBar.style.display = 'flex';
-                filterText.innerText = "Показан улов: За неделю";
-            } else if (activeFilter.type === 'month') {
-                filterBar.style.display = 'flex';
-                filterText.innerText = "Показан улов: За месяц";
-            } else {
+        function setPeriod(p, el) {
+            document.querySelectorAll('.stat-box').forEach(b => b.classList.remove('selected')); el.classList.add('selected');
+            filter.type = p; filter.val = null; showFish(); switchTab('history', document.getElementById('t_hist'));
+        }
+        function setDate(d) { filter.type = 'date'; filter.val = d; showFish(); switchTab('history', document.getElementById('t_hist')); }
+        function resetFilter() { document.querySelectorAll('.stat-box').forEach(b => b.classList.remove('selected')); filter.type = 'all'; showFish(); }
+    </script>
+</body>
+</html>
