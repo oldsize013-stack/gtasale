@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рыбалка GTA 5 RP</title>
+    <script src="https://telegram.org"></script>
+    <style>
+        body { background-color: #0f1115; color: #ffffff; font-family: Arial, sans-serif; margin: 0; padding: 15px; }
+        .header { text-align: center; padding: 10px 0; font-weight: bold; color: #00ff88; font-size: 18px; border-bottom: 1px solid #1f232b; }
+        .tabs { display: flex; justify-content: space-around; margin: 15px 0; background: #171a21; border-radius: 8px; padding: 4px; }
+        .tab { flex: 1; text-align: center; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; color: #7a8b9e; font-size: 14px; }
+        .tab.active { background: #00ff88; color: #000; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .card { background: #171a21; border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; border: 1px solid #232834; }
+        .card-img { width: 70px; height: 50px; border-radius: 6px; object-fit: cover; margin-right: 12px; background: #232834; }
+        .card-info { flex-grow: 1; }
+        .card-title { font-weight: bold; font-size: 15px; margin-bottom: 3px; }
+        .card-sub { color: #7a8b9e; font-size: 12px; }
+        .card-price { color: #00ff88; font-weight: bold; font-size: 16px; margin-left: 10px; }
+        .day-card { background: #171a21; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #00ff88; }
+    </style>
+</head>
+<body>
+    <div class="header">🎣 КАРТОЧКА УЛОВА — СТИВ</div>
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('history', this)">Улов</div>
+        <div class="tab" onclick="switchTab('stats', this)">Заработок по дням</div>
+    </div>
+    <div id="history" class="section active"><div id="fish_list"></div></div>
+    <div id="stats" class="section"><div id="days_list"></div></div>
+    <script>
+        const tg = window.Telegram.WebApp; tg.expand();
+        function switchTab(id, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active'); el.classList.add('active');
+        }
+        // Получаем данные, которые передал наш бот
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawData = urlParams.get('data');
+        if (rawData) {
+            try {
+                const data = JSON.parse(decodeURIComponent(rawData));
+                const fList = document.getElementById('fish_list');
+                data.history.reverse().forEach(f => {
+                    fList.innerHTML += `<div class="card">
+                        <img class="card-img" src="${f.img || 'https://placehold.co'}">
+                        <div class="card-info"><div class="card-title">${f.name}</div><div class="card-sub">Вес: ${f.weight} кг | ${f.time}</div></div>
+                        <div class="card-price">+${f.price}$</div>
+                    </div>`;
+                });
+                const dList = document.getElementById('days_list');
+                Object.keys(data.days).sort().reverse().forEach(date => {
+                    dList.innerHTML += `<div class="day-card">
+                        <div style="font-weight:bold;">${date}</div>
+                        <div style="text-align:right;"><div style="color:#00ff88;font-weight:bold;">+${data.days[date].money}$</div><div style="color:#7a8b9e;font-size:12px;">Всего: ${data.days[date].weight.toFixed(2)} кг</div></div>
+                    </div>`;
+                });
+            } catch(e) { console.error(e); }
+        }
+    </script>
+</body>
+</html>
