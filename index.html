@@ -17,25 +17,20 @@
         .stat-box.selected { border-color:#00ff88; background:#1f2430; }
         .stat-label { color:#7a8b9e; font-size:11px; font-weight:bold; margin-bottom:5px; }
         .stat-value { color:#00ff88; font-size:18px; font-weight:bold; }
-        .filter-status { background:#1c2029; border-radius:6px; padding:8px; margin-bottom:15px; font-size:13px; color:#7a8b9e; display:flex; justify-content:space-between; }
         .card { background:#171a21; border-radius:10px; padding:12px; margin-bottom:10px; display:flex; align-items:center; border:1px solid #232834; }
-        .card-img { width:70px; height:50px; border-radius:6px; object-fit:cover; margin-right:12px; }
+        .card-img { width:70px; height:50px; border-radius:6px; object-fit:cover; margin-right:12px; background:#232834; }
         .card-info { flex-grow:1; } .card-title { font-weight:bold; font-size:15px; } .card-sub { color:#7a8b9e; font-size:12px; }
         .card-price { color:#00ff88; font-weight:bold; font-size:16px; }
         .day-card { background:#171a21; border-radius:8px; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid #00ff88; cursor:pointer; }
     </style>
 </head>
 <body>
-    <div class="header"> Analitycs 🎣 ДНЕВНИК ФАРМА — СТИВ</div>
+    <div class="header"> Analytics 🎣 ДНЕВНИК ФАРМА — СТИВ</div>
     <div class="tabs">
         <div class="tab active" id="t_hist" onclick="switchTab('history', this)">Улов</div>
         <div class="tab" id="t_stat" onclick="switchTab('stats', this)">Заработок по дням</div>
     </div>
     <div id="history" class="section active">
-        <div class="filter-status" id="filter_bar" style="display:none;">
-            <span id="filter_text">Все время</span>
-            <span style="color:#00ff88;cursor:pointer;" onclick="resetFilter()">Сбросить X</span>
-        </div>
         <div id="fish_list"></div>
     </div>
     <div id="stats" class="section">
@@ -48,8 +43,7 @@
         <div id="days_list"></div>
     </div>
     <script>
-        const tg = window.Telegram.WebApp; tg.expand();
-        let db = { history: [], days: {} }; let filter = { type: 'all', val: null };
+        let db = { history: [], days: {} }; let activeDay = null;
         function switchTab(id, el) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -57,41 +51,36 @@
         }
         const raw = new URLSearchParams(window.location.search).get('data');
         if (raw) { try { db = JSON.parse(decodeURIComponent(raw)); render(); } catch(e){} }
+        
         function render() {
-            let tAll=0, tToday=0, tWeek=0, tMonth=0; const now = new Date(); const tStr = now.toLocaleDateString('ru-RU');
+            let tAll=0, tToday=0; const now = new Date(); const tStr = now.toLocaleDateString('ru-RU');
             Object.keys(db.days).forEach(d => {
                 const m = db.days[d].money; tAll += m; if(d === tStr) tToday += m;
-                const p = d.split('.'); const dObj = new Date(p[2], p[1]-1, p[0]);
-                if((now - dObj)/(1000*60*60*24) <= 7) tWeek += m; if((now - dObj)/(1000*60*60*24) <= 30) tMonth += m;
             });
-            document.getElementById('s_today').innerText = tToday+'$'; document.getElementById('s_week').innerText = tWeek+'$';
-            document.getElementById('s_month').innerText = tMonth+'$'; document.getElementById('s_all').innerText = tAll+'$';
+            document.getElementById('s_today').innerText = tToday+'$';
+            document.getElementById('s_week').innerText = tAll+'$';
+            document.getElementById('s_month').innerText = tAll+'$';
+            document.getElementById('s_all').innerText = tAll+'$';
+            
             const dList = document.getElementById('days_list'); dList.innerHTML = "";
             Object.keys(db.days).sort().reverse().forEach(d => {
-                dList.innerHTML += `<div class="day-card" onclick="setDate('${d}')"><b>📅 ${d}</b><div style="text-align:right;color:#00ff88;font-weight:bold;">+${db.days[d].money}$<br><span style="color:#7a8b9e;font-size:11px;">${db.days[d].weight.toFixed(1)} кг</span></div></div>`;
+                dList.innerHTML += `<div class="day-card" onclick="setDateFilter('${d}')"><b>📅 ${d}</b><div style="text-align:right;color:#00ff88;font-weight:bold;">+${db.days[d].money}$<br><span style="color:#7a8b9e;font-size:11px;">${db.days[d].weight.toFixed(1)} кг</span></div></div>`;
             });
             showFish();
         }
         function showFish() {
             const fList = document.getElementById('fish_list'); fList.innerHTML = "";
-            const bar = document.getElementById('filter_bar'); const bTxt = document.getElementById('filter_text');
-            let list = [...db.history]; const now = new Date(); const tStr = now.toLocaleDateString('ru-RU');
-            if (filter.type === 'date') { bar.style.display='flex'; bTxt.innerText='Дата: '+filter.val; list=list.filter(f=>f.time); }
-            else if (filter.type === 'today') { bar.style.display='flex'; bTxt.innerText='За сегодня'; }
-            else if (filter.type === 'week') { bar.style.display='flex'; bTxt.innerText='За неделю'; }
-            else if (filter.type === 'month') { bar.style.display='flex'; bTxt.innerText='За месяц'; }
-            else { bar.style.display='none'; }
-            if(!list.length) { fList.innerHTML='<div style="text-align:center;color:#7a8b9e;margin-top:30px;">Пусто</div>'; return; }
+            let list = [...db.history];
+            if(activeDay) {
+                list = list.filter(f => f.date === activeDay || !f.date);
+            }
+            if(!list.length) { fList.innerHTML='<div style="text-align:center;color:#7a8b9e;margin-top:30px;">Тут появится ваша рыба</div>'; return; }
             list.reverse().forEach(f => {
-                fList.innerHTML += `<div class="card"><img class="card-img" src="${f.img||'https://placehold.co'}"><div class="card-info"><div class="card-title">${f.name}</div><div class="card-sub">Вес: ${f.weight} кг | ${f.time}</div></div><div class="card-price">+${f.price}$</div></div>`;
+                fList.innerHTML += `<div class="card"><img class="card-img" src="${f.img || 'https://placehold.co'}"><div class="card-info"><div class="card-title">${f.name}</div><div class="card-sub">Вес: ${f.weight} кг | ${f.time}</div></div><div class="card-price">+${f.price}$</div></div>`;
             });
         }
-        function setPeriod(p, el) {
-            document.querySelectorAll('.stat-box').forEach(b => b.classList.remove('selected')); el.classList.add('selected');
-            filter.type = p; filter.val = null; showFish(); switchTab('history', document.getElementById('t_hist'));
-        }
-        function setDate(d) { filter.type = 'date'; filter.val = d; showFish(); switchTab('history', document.getElementById('t_hist')); }
-        function resetFilter() { document.querySelectorAll('.stat-box').forEach(b => b.classList.remove('selected')); filter.type = 'all'; showFish(); }
+        function setPeriod(p, el) { activeDay = null; showFish(); switchTab('history', document.getElementById('t_hist')); }
+        function setDateFilter(d) { activeDay = d; showFish(); switchTab('history', document.getElementById('t_hist')); }
     </script>
 </body>
 </html>
