@@ -6,30 +6,56 @@
     <title>Рыбалка GTA 5 RP</title>
     <script src="https://telegram.org"></script>
     <style>
-        body { background-color: #0f1115; color: #ffffff; font-family: Arial, sans-serif; margin: 0; padding: 15px; }
+        body { background-color: #0f1115; color: #ffffff; font-family: Arial, sans-serif; margin: 0; padding: 15px; box-sizing: border-box; }
         .header { text-align: center; padding: 10px 0; font-weight: bold; color: #00ff88; font-size: 18px; border-bottom: 1px solid #1f232b; }
+        
         .tabs { display: flex; justify-content: space-around; margin: 15px 0; background: #171a21; border-radius: 8px; padding: 4px; }
         .tab { flex: 1; text-align: center; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; color: #7a8b9e; font-size: 14px; }
         .tab.active { background: #00ff88; color: #000; }
+        
         .section { display: none; }
         .section.active { display: block; }
+        
+        /* Блоки статистики в стиле Artis */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-box { background: #171a21; border: 1px solid #232834; border-radius: 10px; padding: 12px; text-align: center; }
+        .stat-label { color: #7a8b9e; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-value { color: #00ff88; font-size: 20px; font-weight: bold; }
+        
         .card { background: #171a21; border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; border: 1px solid #232834; }
         .card-img { width: 70px; height: 50px; border-radius: 6px; object-fit: cover; margin-right: 12px; background: #232834; }
         .card-info { flex-grow: 1; }
         .card-title { font-weight: bold; font-size: 15px; margin-bottom: 3px; }
         .card-sub { color: #7a8b9e; font-size: 12px; }
         .card-price { color: #00ff88; font-weight: bold; font-size: 16px; margin-left: 10px; }
+        
         .day-card { background: #171a21; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #00ff88; }
     </style>
 </head>
 <body>
-    <div class="header">🎣 КАРТОЧКА УЛОВА — СТИВ</div>
+    <div class="header">🎣 ДНЕВНИК ФАРМА — СТИВ</div>
+    
     <div class="tabs">
         <div class="tab active" onclick="switchTab('history', this)">Улов</div>
         <div class="tab" onclick="switchTab('stats', this)">Заработок по дням</div>
     </div>
-    <div id="history" class="section active"><div id="fish_list"></div></div>
-    <div id="stats" class="section"><div id="days_list"></div></div>
+    
+    <!-- Вкладка 1: Лента улова -->
+    <div id="history" class="section active">
+        <div id="fish_list"></div>
+    </div>
+    
+    <!-- Вкладка 2: Статистика как в Artis -->
+    <div id="stats" class="section">
+        <div class="stats-grid">
+            <div class="stat-box"><div class="stat-label">Сегодня</div><div class="stat-value" id="stat_today">0$</div></div>
+            <div class="stat-box"><div class="stat-label">Неделя</div><div class="stat-value" id="stat_week">0$</div></div>
+            <div class="stat-box"><div class="stat-label">Месяц</div><div class="stat-value" id="stat_month">0$</div></div>
+            <div class="stat-box"><div class="stat-label">Все время</div><div class="stat-value" id="stat_all">0$</div></div>
+        </div>
+        <div id="days_list"></div>
+    </div>
+
     <script>
         const tg = window.Telegram.WebApp; tg.expand();
         function switchTab(id, el) {
@@ -37,12 +63,14 @@
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active'); el.classList.add('active');
         }
-        // Получаем данные, которые передал наш бот
+
         const urlParams = new URLSearchParams(window.location.search);
         const rawData = urlParams.get('data');
         if (rawData) {
             try {
                 const data = JSON.parse(decodeURIComponent(rawData));
+                
+                // Рендер истории улова
                 const fList = document.getElementById('fish_list');
                 data.history.reverse().forEach(f => {
                     fList.innerHTML += `<div class="card">
@@ -51,13 +79,34 @@
                         <div class="card-price">+${f.price}$</div>
                     </div>`;
                 });
+
+                // Рендер списка дней
                 const dList = document.getElementById('days_list');
+                let totalAll = 0;
+                
                 Object.keys(data.days).sort().reverse().forEach(date => {
+                    const dayMoney = data.days[date].money;
+                    totalAll += dayMoney;
+                    
                     dList.innerHTML += `<div class="day-card">
                         <div style="font-weight:bold;">${date}</div>
-                        <div style="text-align:right;"><div style="color:#00ff88;font-weight:bold;">+${data.days[date].money}$</div><div style="color:#7a8b9e;font-size:12px;">Всего: ${data.days[date].weight.toFixed(2)} кг</div></div>
+                        <div style="text-align:right;">
+                            <div style="color:#00ff88;font-weight:bold;">+${dayMoney}$</div>
+                            <div style="color:#7a8b9e;font-size:12px;">Всего: ${data.days[date].weight.toFixed(2)} кг</div>
+                        </div>
                     </div>`;
                 });
+
+                // Расчет плиток статистики (базовый автоматический расчет)
+                document.getElementById('stat_all').innerText = totalAll + '$';
+                document.getElementById('stat_month').innerText = totalAll + '$'; // Для старта будет равно общему
+                document.getElementById('stat_week').innerText = totalAll + '$';
+                
+                const todayStr = new Date().toLocaleDateString('ru-RU');
+                if(data.days[todayStr]) {
+                    document.getElementById('stat_today').innerText = data.days[todayStr].money + '$';
+                }
+
             } catch(e) { console.error(e); }
         }
     </script>
