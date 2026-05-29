@@ -75,7 +75,7 @@
             if(activeDay) { list = list.filter(f => f.date === activeDay || !f.date); }
             if(!list.length) { fList.innerHTML='<div style="text-align:center;color:#7a8b9e;margin-top:30px;">Тут появится ваша рыба</div>'; return; }
             list.reverse().forEach(f => {
-                fList.innerHTML += `<div class="card"><img class="card-img" src="${f.img || 'https://placehold.co'}"><div class="card-info"><div class="card-title">${f.name}</div><div class="card-sub">Вес: ${f.weight} кг | ${f.time}</div></div><div class="card-price">+${f.price}$</div></div>`;
+                fList.innerHTML += `<div class="card"><img class="card-img" src="${f.image || 'https://placehold.co'}"><div class="card-info"><div class="card-title">${f.name}</div><div class="card-sub">Вес: ${f.weight} кг | ${f.time}</div></div><div class="card-price">+${f.price}$</div></div>`;
             });
         }
         function setPeriod(p, el) { activeDay = null; showFish(); switchTab('history', document.getElementById('t_hist')); }
