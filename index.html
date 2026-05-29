@@ -17,7 +17,6 @@
         .stat-box.selected { border-color:#00ff88; background:#1f2430; }
         .stat-label { color:#7a8b9e; font-size:11px; font-weight:bold; margin-bottom:5px; }
         .stat-value { color:#00ff88; font-size:18px; font-weight:bold; }
-        /* Адаптивная иконка: картинка центрируется и не режется */
         .card { background:#171a21; border-radius:10px; padding:12px; margin-bottom:10px; display:flex; align-items:center; border:1px solid #232834; }
         .card-img { width:70px; height:50px; border-radius:6px; object-fit:contain; background:#12141a; margin-right:12px; border:1px solid #232834; }
         .card-info { flex-grow:1; } .card-title { font-weight:bold; font-size:15px; } .card-sub { color:#7a8b9e; font-size:12px; }
@@ -31,9 +30,7 @@
         <div class="tab active" id="t_hist" onclick="switchTab('history', this)">Улов</div>
         <div class="tab" id="t_stat" onclick="switchTab('stats', this)">Заработок по дням</div>
     </div>
-    <div id="history" class="section active">
-        <div id="fish_list"></div>
-    </div>
+    <div id="history" class="section active"><div id="fish_list"></div></div>
     <div id="stats" class="section">
         <div class="stats-grid">
             <div class="stat-box" id="b_today" onclick="setPeriod('today', this)"><div class="stat-label">Сегодня</div><div class="stat-value" id="s_today">0$</div></div>
